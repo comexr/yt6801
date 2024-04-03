@@ -1,0 +1,6 @@
+*.debian.tar.xz
+*.dsc
+*.deb
+*.build
+*.buildinfo
+*.changes

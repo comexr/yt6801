@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # Attempt to (re-)load module, fail silently if not possible
+        echo "(Re)load module if possible"
+        rmmod yt6801 > /dev/null 2>&1 || true
+        modprobe yt6801 > /dev/null 2>&1 || true
+    ;;
+esac

@@ -1,0 +1,12 @@
+Source: tuxedo-yt6801
+Maintainer: TUXEDO Computers GmbH <tux@tuxedocomputers.com>
+Section: devel
+Priority: optional
+Standards-Version: 4.6.0
+Build-Depends: debhelper-compat (= 13), dh-sequence-dkms
+
+Package: tuxedo-yt6801
+Architecture: all
+Depends: ${misc:Depends}
+Description: Driver for Motorcomm YT6801
+ A driver for the Motorcomm YT6801 ethernet controller.
