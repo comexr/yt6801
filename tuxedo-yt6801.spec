@@ -25,6 +25,8 @@ mkdir -p %{buildroot}%{_usrsrc}/%{name}-%{version}
 cp -r * %{buildroot}%{_usrsrc}/%{name}-%{version}
 find %{buildroot}%{_usrsrc}/%{name}-%{version} -type f -exec chmod 0644 {} +
 sed -i 's/\r$//' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
+sed -i '/^REMAKE_INITRD=/d' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
+sed -i 's/PACKAGE_NAME="yt6801"/PACKAGE_NAME="tuxedo-yt6801"/' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
 
 %files
 %{_usrsrc}/%{name}-%{version}
