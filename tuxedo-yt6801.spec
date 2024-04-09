@@ -24,6 +24,7 @@ A driver for the Motorcomm YT6801 ethernet controller.
 mkdir -p %{buildroot}%{_usrsrc}/%{name}-%{version}
 cp -r * %{buildroot}%{_usrsrc}/%{name}-%{version}
 find %{buildroot}%{_usrsrc}/%{name}-%{version} -type f -exec chmod 0644 {} +
+sed -i 's/\r$//' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
 
 %files
 %{_usrsrc}/%{name}-%{version}
