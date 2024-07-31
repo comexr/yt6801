@@ -1,3 +1,9 @@
+tuxedo-yt6801 (1.0.28-2) jammy; urgency=medium
+
+  * Build fix for kernel version
+
+ -- Christoffer Sandberg <tux@tuxedocomputers.com>  Wed, 31 Jul 2024 14:33:00 +0200
+
 tuxedo-yt6801 (1.0.28-1) jammy; urgency=medium
 
   * Initial release.
