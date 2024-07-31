@@ -13,8 +13,8 @@ CROSS_COMPILE ?=
 CONFIG_MODULE_SIG=n
 EXTRA_CFLAGS = -Wall -g -I$(CURDIR) -I$(subst fuxi-linux-release-package/module_fuxi/src,common,$(PWD)) -I$(PWD)
 EXTRA_CFLAGS += -DFXGMAC_DEBUG
-KSRC = /lib/modules/`uname -r`/build
-KDST = /lib/modules/`uname -r`/kernel/drivers/net/ethernet/motorcomm/
+KSRC = /lib/modules/$(KERNELRELEASE)/build
+KDST = /lib/modules/$(KERNELRELEASE)/kernel/drivers/net/ethernet/motorcomm/
 KFILE = yt6801.ko
 ifneq ($(filter arm arm64, $(ARCH)),)
 	ifeq ($(CURARCH), x86)
