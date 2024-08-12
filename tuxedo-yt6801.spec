@@ -27,6 +27,8 @@ find %{buildroot}%{_usrsrc}/%{name}-%{version} -type f -exec chmod 0644 {} +
 sed -i 's/\r$//' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
 sed -i '/^REMAKE_INITRD=/d' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
 sed -i 's/PACKAGE_NAME="yt6801"/PACKAGE_NAME="tuxedo-yt6801"/' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
+rm %{buildroot}%{_usrsrc}/%{name}-%{version}/Makefile
+printf "yt6801-objs :=  fuxi-gmac-common.o fuxi-gmac-desc.o fuxi-gmac-ethtool.o fuxi-gmac-hw.o fuxi-gmac-net.o fuxi-gmac-pci.o fuxi-gmac-phy.o fuxi-efuse.o fuxi-dbg.o fuxi-gmac-debugfs.o\nobj-m += yt6801.o\n" > %{buildroot}%{_usrsrc}/%{name}-%{version}/Kbuild
 
 %files
 %{_usrsrc}/%{name}-%{version}
