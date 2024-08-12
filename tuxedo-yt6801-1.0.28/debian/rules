@@ -6,7 +6,7 @@ include /usr/share/dpkg/pkg-info.mk
 	dh $@
 
 override_dh_install:
-	dh_install ./. -X debian -X*.cmd -X*.d -X*.ko -X*.mod -X*.mod.c -X*.o -Xmodules.order -Xdkms.conf -X.gitignore usr/src/$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)
+	dh_install ./. -X debian -X*.cmd -X*.d -X*.ko -X*.mod -X*.mod.c -X*.o -Xmodules.order -Xdkms.conf -XMakefile -X.gitignore usr/src/$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)
 
 override_dh_fixperms:
 	dh_fixperms

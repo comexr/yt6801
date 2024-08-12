@@ -1,8 +1,6 @@
 PACKAGE_NAME="tuxedo-yt6801"
 PACKAGE_VERSION="#MODULE_VERSION#"
-CLEAN="make clean"
-MAKE[0]="make"
-BUILT_MODULE_NAME[0]="yt6801"
-DEST_MODULE_LOCATION[0]="/kernel/drivers/net/ethernet/motorcomm"
 AUTOINSTALL="yes"
-REMAKE_INITRD="yes"
+
+DEST_MODULE_LOCATION[0]="/kernel/drivers/net/ethernet/motorcomm"
+BUILT_MODULE_NAME[0]="yt6801"
