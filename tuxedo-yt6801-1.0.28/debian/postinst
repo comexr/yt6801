@@ -27,14 +27,12 @@ detect_chroot() {
 
 case "$1" in
     configure)
+        # Attempt to (re-)load module
         if detect_chroot; then
             echo "Detected chroot environment. Skipping module (re)load."
         else
             echo "(Re)load module if possible"
-            if ! rmmod yt6801 > /dev/null 2>&1; then
-                echo "Warning: Could not remove module yt6801. It may not be loaded." >&2
-            fi
-
+            rmmod yt6801 > /dev/null 2>&1
             if ! modprobe yt6801 > /dev/null 2>&1; then
                 echo "Warning: Could not load module yt6801." >&2
             fi
