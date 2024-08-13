@@ -2,13 +2,42 @@
 
 set -e
 
+# Function to detect if we are inside a chroot environment
+detect_chroot() {
+    local root_path="/"
+    local proc_root_path="/proc/1/root/."
+
+    # Get device and inode of the root directory
+    local root_stat
+    root_stat=$(stat -c "%d:%i" "$root_path")
+
+    # Get device and inode of /proc/1/root directory
+    local proc_root_stat
+    proc_root_stat=$(stat -c "%d:%i" "$proc_root_path")
+
+    # Compare the two; if they differ, we are in a chroot
+    if [ "$root_stat" != "$proc_root_stat" ]; then
+        return 0  # In chroot
+    else
+        return 1  # Not in chroot
+    fi
+}
+
 #DEBHELPER#
 
 case "$1" in
     configure)
-        # Attempt to (re-)load module, fail silently if not possible
-        echo "(Re)load module if possible"
-        rmmod yt6801 > /dev/null 2>&1 || true
-        modprobe yt6801 > /dev/null 2>&1 || true
+        if detect_chroot; then
+            echo "Detected chroot environment. Skipping module (re)load."
+        else
+            echo "(Re)load module if possible"
+            if ! rmmod yt6801 > /dev/null 2>&1; then
+                echo "Warning: Could not remove module yt6801. It may not be loaded." >&2
+            fi
+
+            if ! modprobe yt6801 > /dev/null 2>&1; then
+                echo "Warning: Could not load module yt6801." >&2
+            fi
+        fi
     ;;
 esac
