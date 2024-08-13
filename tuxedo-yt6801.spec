@@ -1,6 +1,6 @@
 Name:           tuxedo-yt6801
 Version:        1.0.28
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Driver for Motorcomm YT6801
 
 License:        GPLv3+
@@ -96,6 +96,8 @@ else
 fi
 
 %changelog
+* Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-6
+- Fix install error
 * Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-5
 - Don't print warning for normal behaviour
 - Fix rpm
