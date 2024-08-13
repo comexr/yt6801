@@ -38,15 +38,12 @@ printf "yt6801-objs :=  fuxi-gmac-common.o fuxi-gmac-desc.o fuxi-gmac-ethtool.o 
 detect_chroot() {
     local root_path="/"
     local proc_root_path="/proc/1/root/."
-
     # Get device and inode of the root directory
     local root_stat
     root_stat=$(stat -c "%d:%i" "$root_path")
-
     # Get device and inode of /proc/1/root directory
     local proc_root_stat
     proc_root_stat=$(stat -c "%d:%i" "$proc_root_path")
-
     # Compare the two; if they differ, we are in a chroot
     if [ "$root_stat" != "$proc_root_stat" ]; then
         return 0  # In chroot
@@ -63,7 +60,7 @@ if detect_chroot; then
     echo "Detected chroot environment. Skipping module (re)load."
 else
     echo "(Re)load module if possible"
-    rmmod yt6801 > /dev/null 2>&1
+    rmmod yt6801 > /dev/null 2>&1 || true
     if ! modprobe yt6801 > /dev/null 2>&1; then
         echo "Warning: Could not load module yt6801." >&2
     fi
@@ -74,15 +71,12 @@ fi
 detect_chroot() {
     local root_path="/"
     local proc_root_path="/proc/1/root/."
-
     # Get device and inode of the root directory
     local root_stat
     root_stat=$(stat -c "%d:%i" "$root_path")
-
     # Get device and inode of /proc/1/root directory
     local proc_root_stat
     proc_root_stat=$(stat -c "%d:%i" "$proc_root_path")
-
     # Compare the two; if they differ, we are in a chroot
     if [ "$root_stat" != "$proc_root_stat" ]; then
         return 0  # In chroot
@@ -97,8 +91,8 @@ if detect_chroot; then
     echo "Detected chroot environment. Skipping module (re)load."
 else
     echo "(Re)load module if possible"
-    rmmod yt6801 > /dev/null 2>&1
-    modprobe yt6801 > /dev/null 2>&1
+    rmmod yt6801 > /dev/null 2>&1 || true
+    modprobe yt6801 > /dev/null 2>&1 || true
 fi
 
 %changelog

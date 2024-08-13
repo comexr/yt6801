@@ -32,8 +32,8 @@ case "$1" in
             echo "Detected chroot environment. Skipping module (re)load."
         else
             echo "(Re)load module if possible"
-            rmmod yt6801 > /dev/null 2>&1
-            modprobe yt6801 > /dev/null 2>&1
+            rmmod yt6801 > /dev/null 2>&1 || true
+            modprobe yt6801 > /dev/null 2>&1 || true
         fi
     ;;
 esac
