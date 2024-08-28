@@ -1,11 +1,11 @@
 Name:           tuxedo-yt6801
-Version:        1.0.28
-Release:        6%{?dist}
+Version:        1.0.29tux0
+Release:        1%{?dist}
 Summary:        Driver for Motorcomm YT6801
 
-License:        GPLv3+
+License:        GPLv2+
 Url:            https://www.tuxedocomputers.com
-Source0:        tuxedo-yt6801_1.0.28.orig.tar.gz
+Source0:        %{name}-%{version}.tar.xz
 
 Requires:       dkms >= 2.1
 
@@ -18,20 +18,14 @@ Packager:       TUXEDO Computers GmbH <tux@tuxedocomputers.com>
 A driver for the Motorcomm YT6801 ethernet controller.
 
 %prep
-%setup -c -q
+%setup -q
 
 %install
-mkdir -p %{buildroot}%{_usrsrc}/%{name}-%{version}
-cp -r * %{buildroot}%{_usrsrc}/%{name}-%{version}
-find %{buildroot}%{_usrsrc}/%{name}-%{version} -type f -exec chmod 0644 {} +
-sed -i 's/\r$//' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
-sed -i '/^REMAKE_INITRD=/d' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
-sed -i 's/PACKAGE_NAME="yt6801"/PACKAGE_NAME="tuxedo-yt6801"/' %{buildroot}%{_usrsrc}/%{name}-%{version}/dkms.conf
-rm %{buildroot}%{_usrsrc}/%{name}-%{version}/Makefile
-printf "yt6801-objs :=  fuxi-gmac-common.o fuxi-gmac-desc.o fuxi-gmac-ethtool.o fuxi-gmac-hw.o fuxi-gmac-net.o fuxi-gmac-pci.o fuxi-gmac-phy.o fuxi-efuse.o fuxi-dbg.o fuxi-gmac-debugfs.o\nobj-m += yt6801.o\n" > %{buildroot}%{_usrsrc}/%{name}-%{version}/Kbuild
+cp -r %{_builddir}/%{name}-%{version}/usr %{buildroot}
 
 %files
 %{_usrsrc}/%{name}-%{version}
+%license LICENSE
 
 %post
 # Function to detect if we are inside a chroot environment
@@ -96,16 +90,25 @@ else
 fi
 
 %changelog
+* Wed Aug 28 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.29tux0-1
+- Update codebase to 1.0.29
+- Convert to native package
+
 * Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-6
 - Fix install error
+
 * Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-5
 - Don't print warning for normal behaviour
 - Fix rpm
+
 * Tue Aug 13 2024 Maximilian Arnold <tux@tuxedocomputers.com> 1.0.28-4
 - Removed reload of the module for chroot environments
+
 * Mon Aug 12 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-3
 - Switch build process to Kbuild instead of Makefile
+
 * Wed Jul 31 2024 Christoffer Sandberg <tux@tuxedocomputers.com> 1.0.28-2
 - Build fix for kernel version
+
 * Wed Apr 03 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.28-1
 - Initial release

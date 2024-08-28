@@ -1,3 +1,11 @@
+tuxedo-yt6801 (1.0.29tux0) jammy; urgency=medium
+
+  [ Werner Sembach ]
+  * Update codebase to 1.0.29
+  * Convert to native package
+
+ -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 28 Aug 2024 14:02:46 +0200
+
 tuxedo-yt6801 (1.0.28-6) jammy; urgency=medium
 
   * Fix install error

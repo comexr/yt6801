@@ -20,12 +20,26 @@
 
 .PHONY: package package-deb package-rpm
 
+PACKAGE_NAME := $(shell grep -Pom1 '.*(?= \(.*\) .*; urgency=.*)' debian/changelog)
+PACKAGE_VERSION := $(shell grep -Pom1 '.* \(\K.*(?=\) .*; urgency=.*)' debian/changelog)
+
 package: package-deb package-rpm
 
 package-deb:
-	cd tuxedo-yt6801-1.0.28 && debuild --no-sign
+	debuild --no-tgz-check --no-sign
 
 package-rpm:
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-yt6801.dkms > src/dkms.conf
 	mkdir -p $(shell rpm --eval "%{_sourcedir}")
-	cp tuxedo-yt6801_1.0.28.orig.tar.gz $(shell rpm --eval "%{_sourcedir}")
+	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
+		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/usr\/src\/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/"\
+		--transform="s/debian\/copyright/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/LICENSE/"\
+		--exclude=*.cmd\
+		--exclude=*.d\
+		--exclude=*.ko\
+		--exclude=*.mod\
+		--exclude=*.mod.c\
+		--exclude=*.o\
+		--exclude=modules.order\
+		src debian/copyright
 	rpmbuild -ba tuxedo-yt6801.spec

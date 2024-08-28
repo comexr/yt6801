@@ -1,6 +1,26 @@
-*.debian.tar.xz
-*.dsc
-*.deb
-*.build
-*.buildinfo
-*.changes
+# make artifacts
+*.cmd
+*.d
+*.ko
+*.mod
+*.mod.c
+*.o
+modules.order
+/Module.symvers
+
+# debuild artifacts
+/debian/*.debhelper
+/debian/*.debhelper.log
+/debian/*.substvars
+/debian/debhelper-build-stamp
+/debian/files
+/debian/tuxedo-yt6801
+
+# rpmbuild artifacts
+/src/dkms.conf
+/tuxedo-yt6801.spec
+
+# IDE artifacts
+*.kate-swp
+/*.kdev4
+/.vscode
