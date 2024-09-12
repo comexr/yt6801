@@ -1,4 +1,4 @@
-# Installation
+# Package installation instructions
 
 ## Install on Debian/Ubuntu(-based):
 ```
