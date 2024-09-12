@@ -1,4 +1,4 @@
-tuxedo-yt6801 (1.0.29tux0) jammy; urgency=medium
+yt6801 (1.0.29tux0) jammy; urgency=medium
 
   [ Werner Sembach ]
   * Update codebase to 1.0.29
@@ -6,38 +6,38 @@ tuxedo-yt6801 (1.0.29tux0) jammy; urgency=medium
 
  -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 28 Aug 2024 14:02:46 +0200
 
-tuxedo-yt6801 (1.0.28-6) jammy; urgency=medium
+yt6801 (1.0.28-6) jammy; urgency=medium
 
   * Fix install error
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 13 Aug 2024 15:41:02 +0200
 
-tuxedo-yt6801 (1.0.28-5) jammy; urgency=medium
+yt6801 (1.0.28-5) jammy; urgency=medium
 
   * Don't print warning for normal behaviour
   * Fix rpm
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 13 Aug 2024 14:57:16 +0200
 
-tuxedo-yt6801 (1.0.28-4) jammy; urgency=medium
+yt6801 (1.0.28-4) jammy; urgency=medium
 
   * Removed reload of the module for chroot environments
 
  -- Maximilian Arnold <tux@tuxedocomputers.com>  Tue, 13 Aug 2024 08:50:00 +0200
 
-tuxedo-yt6801 (1.0.28-3) jammy; urgency=medium
+yt6801 (1.0.28-3) jammy; urgency=medium
 
   * Switch build process to Kbuild instead of Makefile
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Mon, 12 Aug 2024 16:25:39 +0200
 
-tuxedo-yt6801 (1.0.28-2) jammy; urgency=medium
+yt6801 (1.0.28-2) jammy; urgency=medium
 
   * Build fix for kernel version
 
  -- Christoffer Sandberg <tux@tuxedocomputers.com>  Wed, 31 Jul 2024 14:33:00 +0200
 
-tuxedo-yt6801 (1.0.28-1) jammy; urgency=medium
+yt6801 (1.0.28-1) jammy; urgency=medium
 
   * Initial release.
 

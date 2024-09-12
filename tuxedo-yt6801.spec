@@ -1,4 +1,4 @@
-Name:           tuxedo-yt6801
+Name:           yt6801
 Version:        1.0.29tux0
 Release:        1%{?dist}
 Summary:        Driver for Motorcomm YT6801

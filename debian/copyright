@@ -4,7 +4,7 @@ Files: *
 Copyright: 2021 Motor-comm Corporation
 License: GPL-2.0+
 
-Files: Makefile tuxedo-yt6801.spec src/Kbuild debian/*
+Files: Makefile yt6801.spec src/Kbuild debian/*
 Copyright: 2023 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
 License: GPL-2.0+
 

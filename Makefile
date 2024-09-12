@@ -1,9 +1,9 @@
 #
 # Copyright (c) 2023 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
 #
-# This file is part of tuxedo-soc-button-array.
+# This file is part of soc-button-array.
 #
-# tuxedo-soc-button-array is free software; you can redistribute it and/or
+# soc-button-array is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; version 2
 # of the License.
@@ -29,7 +29,7 @@ package-deb:
 	debuild --no-tgz-check --no-sign
 
 package-rpm:
-	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-yt6801.dkms > src/dkms.conf
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/yt6801.dkms > src/dkms.conf
 	mkdir -p $(shell rpm --eval "%{_sourcedir}")
 	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
 		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/usr\/src\/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/"\
@@ -42,4 +42,4 @@ package-rpm:
 		--exclude=*.o\
 		--exclude=modules.order\
 		src debian/copyright
-	rpmbuild -ba tuxedo-yt6801.spec
+	rpmbuild -ba yt6801.spec
