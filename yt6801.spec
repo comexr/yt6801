@@ -1,5 +1,5 @@
 Name:           yt6801
-Version:        1.0.29tux0
+Version:        1.0.29
 Release:        1%{?dist}
 Summary:        Driver for Motorcomm YT6801
 
@@ -90,7 +90,7 @@ else
 fi
 
 %changelog
-* Wed Aug 28 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.29tux0-1
+* Wed Aug 28 2024 Werner Sembach <tux@tuxedocomputers.com> 1.0.29-1
 - Update codebase to 1.0.29
 - Convert to native package
 
