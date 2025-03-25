@@ -1,10 +1,16 @@
+tuxedo-yt6801 (1.0.29tux1) UNRELEASED; urgency=medium
+
+  * Fix wrong name in Makefile
+  * Fix compile error because of bogus debug print define
+
+ -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 25 Mar 2025 11:54:45 +0100
+
 tuxedo-yt6801 (1.0.29tux0) jammy; urgency=medium
 
-  [ Werner Sembach ]
   * Update codebase to 1.0.29
   * Convert to native package
 
- -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 28 Aug 2024 14:02:46 +0200
+ -- Werner Sembach <tux@tuxedocomputers.com>  Wed, 28 Aug 2024 14:02:46 +0200
 
 tuxedo-yt6801 (1.0.28-6) jammy; urgency=medium
 
