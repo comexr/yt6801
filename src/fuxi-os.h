@@ -432,7 +432,7 @@ struct fxgmac_channel;
 
 #else
 #define FXGMAC_PR(x...)		do { } while (0)
-#define DPRINTK(x...)
+#define DPRINTK(x...)		do { } while (0)
 #endif
 
 #define IOC_MAGIC 'M'
