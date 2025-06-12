@@ -368,6 +368,6 @@ int fxgmac_phy_timer_init(struct fxgmac_pdata *pdata)
 
 void fxgmac_phy_timer_destroy(struct fxgmac_pdata *pdata)
 {
-    del_timer_sync(&pdata->expansion.phy_poll_tm);
+    timer_delete_sync(&pdata->expansion.phy_poll_tm);
     DPRINTK("fxgmac_phy_timer removed\n");
 }

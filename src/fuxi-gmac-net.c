@@ -870,9 +870,9 @@ static void fxgmac_stop_timers(struct fxgmac_pdata *pdata)
             if (!channel->tx_ring)
                 break;
 
-            del_timer_sync(&channel->tx_timer);
+            timer_delete_sync(&channel->tx_timer);
 #if FXGMAC_TX_HANG_TIMER_ENABLED
-            del_timer_sync(&channel->tx_hang_timer);
+            timer_delete_sync(&channel->tx_hang_timer);
             channel->tx_hang_timer_active = 0;
 #endif
         }
