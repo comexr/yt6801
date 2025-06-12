@@ -30,6 +30,9 @@ package-deb:
 
 package-rpm:
 	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-yt6801.dkms > src/dkms.conf
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' tuxedo-yt6801.spec.in > tuxedo-yt6801.spec
+	echo >> tuxedo-yt6801.spec
+	./debian-changelog-to-rpm-changelog.awk debian/changelog >> tuxedo-yt6801.spec
 	mkdir -p $(shell rpm --eval "%{_sourcedir}")
 	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
 		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/usr\/src\/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/"\
