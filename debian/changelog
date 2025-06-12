@@ -1,3 +1,11 @@
+tuxedo-yt6801 (1.0.30tux1) noble; urgency=medium
+
+  * Update source to 1.0.30 from upstream
+  * Update Makefile
+  * Fix compile error with linux kernel >= v6.15
+
+ -- Tuxedo BOT <tux@tuxedocomputers.com>  Thu, 12 Jun 2025 12:59:01 +0200
+
 tuxedo-yt6801 (1.0.29tux1) noble; urgency=medium
 
   * Fix wrong name in Makefile
