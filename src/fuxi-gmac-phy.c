@@ -244,6 +244,9 @@ void fxgmac_phy_update_link(struct net_device *netdev)
     struct fxgmac_hw_ops *hw_ops = &pdata->hw_ops;
     u32 regval, cur_link, cur_speed;
 
+    if (pdata->expansion.switch_deadtime > 0)
+        pdata->expansion.switch_deadtime -= 1;
+
     regval = hw_ops->get_ephy_state(pdata);
     // We should make sure that PHY is done with the reset
     if (!(regval & BIT(MGMT_EPHY_CTRL_RESET_POS)) &&
@@ -268,6 +271,12 @@ void fxgmac_phy_update_link(struct net_device *netdev)
         hw_ops->read_ephy_reg(pdata, REG_MII_INT_STATUS, NULL);
 
         if (cur_link) {
+            /* try to reinit with classic / working driver */
+            if(pdata->expansion.switchable && pdata->expansion.switch_deadtime == 0) {
+                pdata->expansion.switch_deadtime = 8;
+                schedule_work(&pdata->expansion.switch_to_classic);
+            }
+
 #ifdef FXGMAC_ASPM_ENABLED
             if (fxgmac_aspm_action_linkup(pdata))
                 return;
@@ -293,6 +302,13 @@ void fxgmac_phy_update_link(struct net_device *netdev)
                                                     pdata->phy_speed);
             }
         }else {
+            /* try to reinit with powersave driver */
+            if(pdata->expansion.switchable &&
+               pdata->expansion.switch_deadtime == 0) {
+                   pdata->expansion.switch_deadtime = 8;
+                   schedule_work(&pdata->expansion.switch_from_classic);
+            }
+
             netif_carrier_off(pdata->netdev);
             netif_tx_stop_all_queues(pdata->netdev);
             pdata->phy_speed = SPEED_UNKNOWN;

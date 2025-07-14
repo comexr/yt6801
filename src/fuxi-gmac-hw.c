@@ -5660,12 +5660,14 @@ static int fxgmac_hw_exit(struct fxgmac_pdata *pdata)
 #ifdef FXGMAC_CHECK_DEV_STATE
     if (pdata->expansion.dev_state == FXGMAC_DEV_OPEN) {
 #endif
-        cfg_r32(pdata, REG_PCI_LINK_CTRL, &regval);
-        pdata->pcie_link_status = FXGMAC_GET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN);
-        if (PCI_LINK_CTRL_L1_STATUS == (pdata->pcie_link_status & 0x02))
-        {
-            regval = FXGMAC_SET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN, 0);
-            cfg_w32(pdata, REG_PCI_LINK_CTRL, regval);
+        if(pdata->expansion.classic) {
+            cfg_r32(pdata, REG_PCI_LINK_CTRL, &regval);
+            pdata->pcie_link_status = FXGMAC_GET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN);
+            if (PCI_LINK_CTRL_L1_STATUS == (pdata->pcie_link_status & 0x02))
+            {
+                regval = FXGMAC_SET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN, 0);
+                cfg_w32(pdata, REG_PCI_LINK_CTRL, regval);
+            }
         }
 #ifdef FXGMAC_CHECK_DEV_STATE
     }
@@ -5739,13 +5741,15 @@ static int fxgmac_pcie_init(struct fxgmac_pdata* pdata, bool ltr_en, bool aspm_l
     u32 regval = 0;
     u32 deviceid = 0;
 
-    cfg_r32(pdata, REG_PCI_LINK_CTRL, &regval);
-    if (PCI_LINK_CTRL_L1_STATUS == (pdata->pcie_link_status & 0x02)
-        && 0x00 == FXGMAC_GET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN)
-        )
-    {
-        regval = FXGMAC_SET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN, pdata->pcie_link_status);
-        cfg_w32(pdata, REG_PCI_LINK_CTRL, regval);
+    if(pdata->expansion.classic) {
+        cfg_r32(pdata, REG_PCI_LINK_CTRL, &regval);
+        if (PCI_LINK_CTRL_L1_STATUS == (pdata->pcie_link_status & 0x02)
+            && 0x00 == FXGMAC_GET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN)
+            )
+        {
+            regval = FXGMAC_SET_REG_BITS(regval, PCI_LINK_CTRL_ASPM_CONTROL_POS, PCI_LINK_CTRL_ASPM_CONTROL_LEN, pdata->pcie_link_status);
+            cfg_w32(pdata, REG_PCI_LINK_CTRL, regval);
+        }
     }
 
     regval = FXGMAC_SET_REG_BITS(0, LTR_IDLE_ENTER_REQUIRE_POS, LTR_IDLE_ENTER_REQUIRE_LEN, LTR_IDLE_ENTER_REQUIRE);

@@ -762,6 +762,12 @@ typedef struct fxgmac_pdata_of_platform
     DEV_STATE                       dev_state;
     struct mutex                    mutex;
     struct timer_list               phy_poll_tm;
+    /* switch between low power idle driver and high power classic mode */
+    bool                            switchable;
+    bool                            classic;
+    u32                             switch_deadtime;
+    struct work_struct              switch_to_classic;
+    struct work_struct              switch_from_classic;
 }FXGMAC_PDATA_OF_PLATFORM;
 
 void fxgmac_restart_dev(struct fxgmac_pdata *pdata);
