@@ -473,10 +473,8 @@ int fxgmac_drv_probe(struct device *dev, struct fxgmac_resources *res)
     pdata->expansion.switch_deadtime = 2;
 
     /* check if driver has to switch from low power to classic */
-    if ((dmi_match(DMI_PRODUCT_SKU, "STELLARIS16I06") &&
-         dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB2")) ||
-        (dmi_match(DMI_PRODUCT_SKU, "STELLSL15I06") &&
-         dmi_match(DMI_BOARD_NAME, "GM5IXxA"))) {
+    if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS16I06") ||
+        dmi_match(DMI_PRODUCT_SKU, "STELLSL15I06")) {
             pdata->expansion.switchable = true;
 
             /* start with low power if switchable driver is used */
