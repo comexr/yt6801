@@ -1,3 +1,9 @@
+tuxedo-yt6801 (1.0.30tux2) noble; urgency=medium
+
+  * Dynamically switch power mode on some devices for lower sleep power draw
+
+ -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 16 Jul 2025 17:57:17 +0200
+
 tuxedo-yt6801 (1.0.30tux1) noble; urgency=medium
 
   * Update source to 1.0.30 from upstream
