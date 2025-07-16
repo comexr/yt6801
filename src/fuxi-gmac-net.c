@@ -1430,6 +1430,12 @@ int fxgmac_start(struct fxgmac_pdata *pdata)
     u8 deviceid;
     int ret;
 
+    /* use the classic version of this driver (high power consumption, but fully
+     * functional).
+     */
+    if(!pdata->expansion.classic)
+        pcie_low_power = 0xE;
+
     if(netif_msg_drv(pdata)) DPRINTK("fxgmac start callin here.\n");
 
     if (pdata->expansion.dev_state != FXGMAC_DEV_OPEN &&
@@ -1534,6 +1540,71 @@ err_napi:
     hw_ops->exit(pdata);
     dev_err(pdata->dev, "fxgmac start callout with irq err.\n");
     return ret;
+}
+
+static void fxgmac_switch_to_classic(struct work_struct *work)
+{
+    struct fxgmac_pdata *pdata = container_of(work,
+                            struct fxgmac_pdata,
+                            expansion.switch_to_classic);
+    struct fxgmac_hw_ops *hw_ops = &pdata->hw_ops;
+    u32 regval, cur_link, cur_speed, ret;
+
+    DPRINTK("INFO: ffxgmac_switch_to_classic\n");
+
+    /* If not running, "restart" will happen on open */
+    if (!netif_running(pdata->netdev) &&
+        pdata->expansion.dev_state != FXGMAC_DEV_START)
+        return;
+
+    fxgmac_lock(pdata);
+    fxgmac_stop(pdata);
+    hw_ops->led_under_shutdown(pdata);
+
+    fxgmac_free_tx_data(pdata);
+    fxgmac_free_rx_data(pdata);
+
+    pdata->expansion.classic = true;
+
+    ret = fxgmac_start(pdata);
+    if (ret) {
+        DPRINTK("fxgmac_switch_to_classic: fxgmac_start failed.\n");
+    }
+
+    fxgmac_unlock(pdata);
+}
+
+static void fxgmac_switch_from_classic(struct work_struct *work)
+{
+    struct fxgmac_pdata *pdata = container_of(work,
+                            struct fxgmac_pdata,
+                            expansion.switch_from_classic);
+    struct fxgmac_hw_ops *hw_ops = &pdata->hw_ops;
+
+    u32 regval, cur_link, cur_speed, ret;
+
+    DPRINTK("INFO: ffxgmac_switch_from_classic\n");
+
+    /* If not running, "restart" will happen on open */
+    if (!netif_running(pdata->netdev) &&
+        pdata->expansion.dev_state != FXGMAC_DEV_START)
+        return;
+
+    fxgmac_lock(pdata);
+    fxgmac_stop(pdata);
+    hw_ops->led_under_shutdown(pdata);
+
+    fxgmac_free_tx_data(pdata);
+    fxgmac_free_rx_data(pdata);
+
+    pdata->expansion.classic = false;
+
+    ret = fxgmac_start(pdata);
+    if (ret) {
+        DPRINTK("fxgmac_switch_from_classic: fxgmac_start failed.\n");
+    }
+
+    fxgmac_unlock(pdata);
 }
 
 void fxgmac_stop(struct fxgmac_pdata *pdata)
@@ -1736,6 +1807,8 @@ static int fxgmac_open(struct net_device *netdev)
         goto unlock;
 
     INIT_WORK(&pdata->expansion.restart_work, fxgmac_restart);
+    INIT_WORK(&pdata->expansion.switch_to_classic, fxgmac_switch_to_classic);
+    INIT_WORK(&pdata->expansion.switch_from_classic, fxgmac_switch_from_classic);
 
 #ifdef FXGMAC_ESD_CHECK_ENABLED
     INIT_DELAYED_WORK(&pdata->expansion.esd_work, fxgmac_esd_work);

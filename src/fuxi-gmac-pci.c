@@ -199,6 +199,10 @@ static int fxgmac_resume(struct pci_dev *pdev)
     DPRINTK("fxpm, fxgmac_resume callin\n");
 
     fxgmac_lock(pdata);
+
+    /* avoid immediate switch action */
+    pdata->expansion.switch_deadtime = 4;
+
     if (pdata->expansion.dev_state != FXGMAC_DEV_SUSPEND)
         goto unlock;
 
