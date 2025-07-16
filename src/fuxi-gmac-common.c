@@ -472,9 +472,12 @@ int fxgmac_drv_probe(struct device *dev, struct fxgmac_resources *res)
     pdata->expansion.classic = true;
     pdata->expansion.switch_deadtime = 2;
 
-    /* check if driver has to switch from low power to classic */
-    if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS16I06") ||
-        dmi_match(DMI_PRODUCT_SKU, "STELLSL15I06")) {
+    /* check if driver has to switch from low power to classic;
+     * all TUXEDO Stellaris and Stellaris Slim with Intel and YT6801 are affected
+     */
+    if (dmi_match(DMI_BOARD_NAME, "GM5IXxA") ||
+        dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB2") ||
+        dmi_match(DMI_BOARD_NAME, "GM7IXxN")) {
             pdata->expansion.switchable = true;
 
             /* start with low power if switchable driver is used */
