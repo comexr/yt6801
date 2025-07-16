@@ -16,6 +16,7 @@
  *
  */
 
+#include <linux/dmi.h>
 #include "fuxi-gmac.h"
 #include "fuxi-gmac-reg.h"
 
@@ -467,6 +468,24 @@ int fxgmac_drv_probe(struct device *dev, struct fxgmac_resources *res)
     pdata->dev_irq = res->irq;
     pdata->msg_enable = NETIF_MSG_DRV;
     pdata->expansion.dev_state = FXGMAC_DEV_PROBE;
+    pdata->expansion.switchable = false;
+    pdata->expansion.classic = true;
+    pdata->expansion.switch_deadtime = 2;
+
+    /* check if driver has to switch from low power to classic;
+     * all TUXEDO Stellaris and Stellaris Slim with Intel and YT6801 are affected
+     */
+    if (dmi_match(DMI_BOARD_NAME, "GM5IXxA") ||
+        dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB2") ||
+        dmi_match(DMI_BOARD_NAME, "GM7IXxN")) {
+            pdata->expansion.switchable = true;
+
+            /* start with low power if switchable driver is used */
+            pdata->expansion.classic = false;
+
+            dev_info(pdata->dev, "FXGMAC_DRV: using switchable driver quirk\n");
+    }
+
     /* default to legacy interrupt */
     pdata->expansion.int_flags = FXGMAC_SET_REG_BITS(pdata->expansion.int_flags,
                                                 FXGMAC_FLAG_INTERRUPT_POS,
