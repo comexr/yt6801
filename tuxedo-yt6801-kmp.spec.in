@@ -1,0 +1,54 @@
+# Spec file for OpenSUSE KMP (Kernel Module Package)
+# Based on the original DKMS spec but adapted for native KMP support
+
+%define mod_name tuxedo-yt6801
+%define kernel_module_package_buildreqs kernel-syms
+
+# Define the kernel module package
+%kernel_module_package -n %{mod_name} -p %{_sourcedir}/%{mod_name}-preamble
+
+Name:           %{mod_name}-kmp
+Version:        #MODULE_VERSION#
+Release:        1%{?dist}
+Summary:        Kernel module for Motorcomm YT6801 ethernet controller
+License:        GPL-2.0+
+Group:          System/Kernel
+URL:            https://www.tuxedocomputers.com
+Source0:        %{mod_name}-%{version}.tar.xz
+Source1:        %{mod_name}-preamble
+BuildRequires:  %kernel_module_package_buildreqs
+BuildRequires:  kernel-devel
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ExclusiveArch:  %ix86 x86_64
+
+%description
+This package contains the kernel module for the Motorcomm YT6801 gigabit
+ethernet controller, built natively for OpenSUSE using KMP.
+
+%prep
+%setup -q -n %{mod_name}-%{version}
+# Create copies for different kernel versions
+set -- *
+mkdir source
+mv "$@" source/
+mkdir obj
+
+%build
+for flavor in %flavors_to_build; do
+    rm -rf obj/$flavor
+    cp -r source obj/$flavor
+    
+    # Build the module for this kernel flavor
+    make -C %{kernel_source $flavor} M=$PWD/obj/$flavor/usr/src/%{mod_name}-%{version} modules
+done
+
+%install
+export INSTALL_MOD_PATH=$RPM_BUILD_ROOT
+export INSTALL_MOD_DIR=updates
+for flavor in %flavors_to_build; do
+    make -C %{kernel_source $flavor} M=$PWD/obj/$flavor/usr/src/%{mod_name}-%{version} \
+        INSTALL_MOD_PATH=$RPM_BUILD_ROOT INSTALL_MOD_DIR=updates modules_install
+done
+
+%changelog
+# Changelog will be appended by the build process
