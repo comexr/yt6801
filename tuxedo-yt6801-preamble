@@ -1,0 +1,16 @@
+# Preamble for KMP package
+# This file defines the package description and requirements
+
+Summary:        Kernel module for Motorcomm YT6801 ethernet controller
+Group:          System/Kernel
+Provides:       %{mod_name}-kmp = %version-%release
+Requires:       coreutils
+Supplements:    modalias(pci:v00001F0Ad00006801sv*sd*bc*sc*i*)
+
+%description
+This package contains the kernel module for the Motorcomm YT6801 gigabit
+ethernet controller. This driver provides support for YT6801-based network
+adapters found in various TUXEDO laptops and other systems.
+
+The module is built specifically for your running kernel and will be automatically
+rebuilt when you install kernel updates through OpenSUSE's package management.
