@@ -1,54 +1,77 @@
-# Spec file for OpenSUSE KMP (Kernel Module Package)
-# Based on the original DKMS spec but adapted for native KMP support
+# Spec file for OpenSUSE KMP with DKMS integration
+# Provides automatic kernel module rebuilds
 
 %define mod_name tuxedo-yt6801
-%define kernel_module_package_buildreqs kernel-syms
-
-# Define the kernel module package
-%kernel_module_package -n %{mod_name} -p %{_sourcedir}/%{mod_name}-preamble
+%define mod_version #MODULE_VERSION#
 
 Name:           %{mod_name}-kmp
-Version:        #MODULE_VERSION#
+Version:        %{mod_version}
 Release:        1%{?dist}
 Summary:        Kernel module for Motorcomm YT6801 ethernet controller
 License:        GPL-2.0+
 Group:          System/Kernel
 URL:            https://www.tuxedocomputers.com
 Source0:        %{mod_name}-%{version}.tar.xz
-Source1:        %{mod_name}-preamble
-BuildRequires:  %kernel_module_package_buildreqs
 BuildRequires:  kernel-devel
+BuildRequires:  dkms
+Requires:       dkms
+Requires:       kernel-devel
+Requires:       kernel-source
+Requires:       gcc
+Requires:       make
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 ExclusiveArch:  %ix86 x86_64
+BuildArch:      noarch
 
 %description
 This package contains the kernel module for the Motorcomm YT6801 gigabit
-ethernet controller, built natively for OpenSUSE using KMP.
+ethernet controller. It uses DKMS to automatically rebuild the module
+for any installed kernel version on OpenSUSE Tumbleweed.
 
 %prep
 %setup -q -n %{mod_name}-%{version}
-# Create copies for different kernel versions
-set -- *
-mkdir source
-mv "$@" source/
-mkdir obj
 
 %build
-for flavor in %flavors_to_build; do
-    rm -rf obj/$flavor
-    cp -r source obj/$flavor
-    
-    # Build the module for this kernel flavor
-    make -C %{kernel_source $flavor} M=$PWD/obj/$flavor/usr/src/%{mod_name}-%{version} modules
-done
+# Nothing to build - DKMS will handle compilation
 
 %install
-export INSTALL_MOD_PATH=$RPM_BUILD_ROOT
-export INSTALL_MOD_DIR=updates
-for flavor in %flavors_to_build; do
-    make -C %{kernel_source $flavor} M=$PWD/obj/$flavor/usr/src/%{mod_name}-%{version} \
-        INSTALL_MOD_PATH=$RPM_BUILD_ROOT INSTALL_MOD_DIR=updates modules_install
-done
+# Install source to DKMS tree
+mkdir -p %{buildroot}/usr/src/%{mod_name}-%{version}
+cp -r src/* %{buildroot}/usr/src/%{mod_name}-%{version}/
+
+# Create DKMS configuration
+cat > %{buildroot}/usr/src/%{mod_name}-%{version}/dkms.conf << EOF
+PACKAGE_NAME="%{mod_name}"
+PACKAGE_VERSION="%{version}"
+BUILT_MODULE_NAME[0]="yt6801"
+DEST_MODULE_LOCATION[0]="/kernel/drivers/net/ethernet/motorcomm"
+AUTOINSTALL="yes"
+REMAKE_INITRD="yes"
+EOF
+
+%files
+/usr/src/%{mod_name}-%{version}/
+
+%post
+# Add to DKMS tree
+dkms add -m %{mod_name} -v %{version} --rpm_safe_upgrade
+
+# Build and install for all installed kernels
+if [ -z "$DURING_INSTALL" ]; then
+    for kernel in /lib/modules/*; do
+        if [ -d "$kernel" ]; then
+            kernel_version=$(basename "$kernel")
+            dkms build -m %{mod_name} -v %{version} -k "$kernel_version" 2>/dev/null || true
+            dkms install -m %{mod_name} -v %{version} -k "$kernel_version" 2>/dev/null || true
+        fi
+    done
+fi
+
+%preun
+# Remove from DKMS tree on uninstall
+if [ $1 -eq 0 ]; then
+    dkms remove -m %{mod_name} -v %{version} --all 2>/dev/null || true
+fi
 
 %changelog
 # Changelog will be appended by the build process
