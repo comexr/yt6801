@@ -131,6 +131,7 @@ struct fxgmac_channel;
 #define FXGMAC_MAX_DBG_TEST_PKT     150
 #define FXGMAC_MAX_DBG_BUF_LEN      64000
 #define FXGMAC_MAX_DBG_RX_DATA      1600
+#define FXGMAC_MAX_DBG_TX_DATA      1600
 #define FXGMAC_NETDEV_OPS_BUF_LEN   256
 
 #define FXGMAC_TEST_MAC_HEAD_LEN        14
