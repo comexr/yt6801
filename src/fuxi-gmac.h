@@ -50,6 +50,10 @@
 #define FXGMAC_NS_IFA_LOCAL_LINK     1
 #define FXGMAC_NS_IFA_GLOBAL_UNICAST 2
 
+/* Security buffer validation constants */
+#define FXGMAC_RSS_HASH_KEY_SIZE     40    // Maximum RSS hash key size
+#define MAX_PATTERN_SIZE             128   // Maximum WOL pattern size for validation
+
 #define FXGMAX_ASPM_WAR_EN
 /* Descriptor related parameters */
 #if FXGMAC_TX_HANG_TIMER_ENABLED
