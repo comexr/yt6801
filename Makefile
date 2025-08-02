@@ -35,8 +35,30 @@ package: package-deb package-rpm
 # Original DKMS-based RPM package
 package-rpm-dkms: package-rpm
 
-# New OpenSUSE KMP package
-package-kmp: package-kmp-simple
+# New OpenSUSE KMP package with DKMS integration
+package-kmp: 
+	@echo "Building OpenSUSE KMP package with DKMS integration..."
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/g' tuxedo-yt6801-kmp.spec.in > tuxedo-yt6801-kmp.spec
+	echo >> tuxedo-yt6801-kmp.spec
+	./debian-changelog-to-rpm-changelog.awk debian/changelog >> tuxedo-yt6801-kmp.spec
+	mkdir -p $(shell rpm --eval "%{_sourcedir}")
+	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
+		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/src/"\
+		--transform="s/debian\/copyright/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/LICENSE/"\
+		--exclude=*.cmd\
+		--exclude=*.d\
+		--exclude=*.ko\
+		--exclude=*.mod\
+		--exclude=*.mod.c\
+		--exclude=*.o\
+		--exclude=Module.symvers\
+		--exclude=modules.order\
+		--xz\
+		src debian/copyright
+	rpmbuild -ba tuxedo-yt6801-kmp.spec
+
+# Legacy KMP package (simple, kernel-specific)
+package-kmp-simple:
 
 package-deb:
 	debuild --no-tgz-check --no-sign

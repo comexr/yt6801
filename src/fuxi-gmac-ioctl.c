@@ -38,6 +38,12 @@ static void fxgmac_dbg_tx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
     /* get pkt data */
     pTx_data = (u8 *)pPkt + sizeof(fxgmac_test_packet);
 
+    /* Validate packet length to prevent buffer overflow */
+    if (pktLen > FXGMAC_MAX_DBG_TX_DATA || pktLen == 0) {
+        DPRINTK("Invalid packet length: %u (max: %d)\n", pktLen, FXGMAC_MAX_DBG_TX_DATA);
+        return;
+    }
+
     /* alloc sk_buff */
     skb = alloc_skb(pktLen, GFP_ATOMIC);
     if (!skb){
@@ -141,6 +147,10 @@ static void fxgmac_dbg_rx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
 
             /* get data from skb */
             //DPRINTK("FXG:rx_skb->len=%d", rx_skb->len);
+            if (rx_skb->len > FXGMAC_MAX_DBG_RX_DATA) {
+                DPRINTK("RX packet too large: %u (max: %d)\n", rx_skb->len, FXGMAC_MAX_DBG_RX_DATA);
+                break;
+            }
             memcpy(rx_data, rx_skb->data, rx_skb->len);
 
 	        /* update next pointer */
@@ -313,12 +323,22 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
 
         case FXGMAC_EFUSE_LED_TEST:
             DPRINTK("Debugfs received device led test command.\n");
+            if (in_data_size != sizeof(struct led_setting)) {
+                DPRINTK("FXGMAC_EFUSE_LED_TEST: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(struct led_setting));
+                goto err;
+            }
             memcpy(&pdata->led, data, sizeof(struct led_setting));
             fxgmac_restart_dev(pdata);
             break;
 
         case FXGMAC_EFUSE_UPDATE_LED_CFG:
             DPRINTK("Debugfs received device led update command.\n");
+            if (in_data_size != sizeof(struct led_setting)) {
+                DPRINTK("FXGMAC_EFUSE_UPDATE_LED_CFG: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(struct led_setting));
+                goto err;
+            }
             memcpy(&pdata->ledconfig, data, sizeof(struct led_setting));
             ret = hw_ops->write_led_config(pdata);
             hw_ops->read_led_config(pdata);
@@ -326,6 +346,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_WRITE_LED:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_WRITE_LED: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             DPRINTK("FXGMAC_EFUSE_WRITE_LED, val = 0x%x\n", ex_data.val0);
             ret = hw_ops->write_led(pdata, ex_data.val0);
@@ -337,6 +362,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_READ_REGIONABC:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_READ_REGIONABC: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->read_efuse_data(pdata, ex_data.val0, &ex_data.val1);
             /*
@@ -353,6 +383,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_WRITE_PATCH_REG:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_WRITE_PATCH_REG: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             /*
              * DPRINTK("FXGMAC_EFUSE_WRITE_PATCH_REG, address = 0x%x, val = 0x%x\n",
@@ -363,6 +398,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_READ_PATCH_REG:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_READ_PATCH_REG: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->read_patch_from_efuse(pdata, ex_data.val0, &ex_data.val1);
             /*
@@ -378,6 +418,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_WRITE_PATCH_PER_INDEX:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_WRITE_PATCH_PER_INDEX: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->write_patch_to_efuse_per_index(pdata, ex_data.val0,
                                                             ex_data.val1,
@@ -389,6 +434,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_EFUSE_READ_PATCH_PER_INDEX:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_EFUSE_READ_PATCH_PER_INDEX: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->read_patch_from_efuse_per_index(pdata,ex_data.val0,
                                                             &ex_data.val1,
@@ -421,8 +471,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_SET_MAC_DATA:
-            if (in_data_size != ETH_ALEN)
+            if (in_data_size != ETH_ALEN) {
+                DPRINTK("FXGMAC_SET_MAC_DATA: Invalid data size %d, expected %d\n", 
+                       in_data_size, ETH_ALEN);
                 goto err;
+            }
             memcpy(mac, data, ETH_ALEN);
             ret = hw_ops->write_mac_subsys_to_efuse(pdata, mac, NULL, NULL);
             if (ret) {
@@ -440,6 +493,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_GET_SUBSYS_ID:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_GET_SUBSYS_ID: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->read_mac_subsys_from_efuse(pdata,
                                                     NULL,
@@ -455,6 +513,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_SET_SUBSYS_ID:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_SET_SUBSYS_ID: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
             ret = hw_ops->write_mac_subsys_to_efuse(pdata,
                                                     NULL,

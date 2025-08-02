@@ -2,7 +2,7 @@
 # Provides automatic kernel module rebuilds
 
 %define mod_name tuxedo-yt6801
-%define mod_version #MODULE_VERSION#
+%define mod_version 1.0.30tux2
 
 Name:           %{mod_name}-kmp
 Version:        %{mod_version}
@@ -75,3 +75,30 @@ fi
 
 %changelog
 # Changelog will be appended by the build process
+
+%changelog
+* Wed Jul 16 2025 Tuxedo BOT <tux@tuxedocomputers.com 1.0.30tux2-1
+- Dynamically switch power mode on some devices for lower sleep power draw
+* Thu Jun 12 2025 Tuxedo BOT <tux@tuxedocomputers.com 1.0.30tux1-1
+- Update source to 1.0.30 from upstream
+- Update Makefile
+- Fix compile error with linux kernel >= v6.15
+* Tue Mar 25 2025 Werner Sembach <tux@tuxedocomputers.com 1.0.29tux1-1
+- Fix wrong name in Makefile
+- Fix compile error because of bogus debug print define
+* Wed Aug 28 2024 Werner Sembach <tux@tuxedocomputers.com 1.0.29tux0-1
+- Update codebase to 1.0.29
+- Convert to native package
+* Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com 1.0.28-6-1
+- Fix install error
+* Tue Aug 13 2024 Werner Sembach <tux@tuxedocomputers.com 1.0.28-5-1
+- Don't print warning for normal behaviour
+- Fix rpm
+* Tue Aug 13 2024 Maximilian Arnold <tux@tuxedocomputers.com 1.0.28-4-1
+- Removed reload of the module for chroot environments
+* Mon Aug 12 2024 Werner Sembach <tux@tuxedocomputers.com 1.0.28-3-1
+- Switch build process to Kbuild instead of Makefile
+* Wed Jul 31 2024 Christoffer Sandberg <tux@tuxedocomputers.com 1.0.28-2-1
+- Build fix for kernel version
+* Wed Apr 03 2024 Werner Sembach <tux@tuxedocomputers.com 1.0.28-1-1
+- Initial release.

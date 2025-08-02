@@ -969,14 +969,26 @@ bool fxgmac_read_led_setting_from_efuse(struct fxgmac_pdata* pdata)
     }
 
     if (!bfirstflag && bsecondflag) {
-        //read first area
-        memcpy(&pdata->led, &led_config_first, sizeof(struct led_setting));
-        bsucceed = true;
+        //read first area - validate LED config size before copy
+        if (sizeof(led_config_first) == sizeof(struct led_setting)) {
+            memcpy(&pdata->led, &led_config_first, sizeof(struct led_setting));
+            bsucceed = true;
+        } else {
+            FXGMAC_PR("SECURITY: LED config first size mismatch: %lu != %lu\n", 
+                     sizeof(led_config_first), sizeof(struct led_setting));
+            bsucceed = false;
+        }
     }
     else if (!bfirstflag && !bsecondflag) {
-        //read second area
-        memcpy(&pdata->led, &led_config_second, sizeof(struct led_setting));
-        bsucceed = true;
+        //read second area - validate LED config size before copy
+        if (sizeof(led_config_second) == sizeof(struct led_setting)) {
+            memcpy(&pdata->led, &led_config_second, sizeof(struct led_setting));
+            bsucceed = true;
+        } else {
+            FXGMAC_PR("SECURITY: LED config second size mismatch: %lu != %lu\n", 
+                     sizeof(led_config_second), sizeof(struct led_setting));
+            bsucceed = false;
+        }
     }
 
 #ifndef LINUX
