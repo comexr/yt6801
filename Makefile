@@ -18,12 +18,42 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-.PHONY: package package-deb package-rpm
+.PHONY: package package-deb package-rpm package-kmp package-kmp-simple
 
 PACKAGE_NAME := $(shell grep -Pom1 '.*(?= \(.*\) .*; urgency=.*)' debian/changelog)
 PACKAGE_VERSION := $(shell grep -Pom1 '.* \(\K.*(?=\) .*; urgency=.*)' debian/changelog)
+KERNEL_VERSION := $(shell uname -r)
 
-package: package-deb package-rpm
+# Find a kernel version that has build directory available
+BUILD_KERNEL := $(shell find /lib/modules -name "build" -type l | head -n1 | cut -d'/' -f4)
+ifeq ($(BUILD_KERNEL),)
+BUILD_KERNEL := $(KERNEL_VERSION)
+endif
+
+package: package-kmp package-deb package-rpm
+
+package-rpm-dkms: package-rpm
+
+package-kmp: 
+	@echo "Building OpenSUSE KMP package with DKMS integration..."
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/g' tuxedo-yt6801-kmp.spec.in > tuxedo-yt6801-kmp.spec
+	echo >> tuxedo-yt6801-kmp.spec
+	./debian-changelog-to-rpm-changelog.awk debian/changelog >> tuxedo-yt6801-kmp.spec
+	mkdir -p $(shell rpm --eval "%{_sourcedir}")
+	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
+		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/src/"\
+		--transform="s/debian\/copyright/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/LICENSE/"\
+		--exclude=*.cmd\
+		--exclude=*.d\
+		--exclude=*.ko\
+		--exclude=*.mod\
+		--exclude=*.mod.c\
+		--exclude=*.o\
+		--exclude=Module.symvers\
+		--exclude=modules.order\
+		--xz\
+		src debian/copyright
+	rpmbuild -ba tuxedo-yt6801-kmp.spec
 
 package-deb:
 	debuild --no-tgz-check --no-sign
