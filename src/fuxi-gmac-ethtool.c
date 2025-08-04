@@ -302,8 +302,16 @@ static int fxgmac_get_rxfh(struct net_device *netdev,struct ethtool_rxfh_param *
 
     if (rxfh->key)
     {
-    	memcpy(rxfh->key, pdata->rss_key, fxgmac_get_rxfh_key_size(netdev));
-    	DPRINTK("fxmac, get_rxfh  for hash key\n");
+        /* SECURITY: Validate RSS hash key size before copy */
+        u32 key_size = fxgmac_get_rxfh_key_size(netdev);
+        if (key_size <= FXGMAC_RSS_HASH_KEY_SIZE) {
+            memcpy(rxfh->key, pdata->rss_key, key_size);
+            DPRINTK("fxmac, get_rxfh for hash key\n");
+        } else {
+            DPRINTK("SECURITY: RSS hash key size too large: %u > %d\n", 
+                    key_size, FXGMAC_RSS_HASH_KEY_SIZE);
+            return -EINVAL;
+        }
     }
 
     return 0;
@@ -370,8 +378,16 @@ static int fxgmac_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
 
     if (key)
     {
-    	memcpy(key, pdata->rss_key, fxgmac_get_rxfh_key_size(netdev));
-    	DPRINTK("fxmac, get_rxfh  for hash key\n");
+        /* Validate key buffer size before copy */
+        u32 key_size = fxgmac_get_rxfh_key_size(netdev);
+        if (key_size <= FXGMAC_RSS_HASH_KEY_SIZE) {
+            memcpy(key, pdata->rss_key, key_size);
+            DPRINTK("fxmac, get_rxfh  for hash key\n");
+        } else {
+            DPRINTK("SECURITY: RSS hash key size too large: %u > %d\n", 
+                    key_size, FXGMAC_RSS_HASH_KEY_SIZE);
+            return -EINVAL;
+        }
     }
 
     return 0;
@@ -767,7 +783,14 @@ static void fxgmac_set_pattern_data(struct fxgmac_pdata *pdata)
     if (pdata->expansion.wol & WAKE_UCAST) {
         pattern[i].mask_info[0] = 0x3F;
         pattern[i].mask_size = sizeof(pattern[0].mask_info);
-        memcpy(pattern[i].pattern_info, pdata->mac_addr, ETH_ALEN);
+        /* Validate MAC address buffer before copy */
+        if (ETH_ALEN <= sizeof(pattern[i].pattern_info)) {
+            memcpy(pattern[i].pattern_info, pdata->mac_addr, ETH_ALEN);
+        } else {
+            DPRINTK("SECURITY: MAC address buffer too large: %d > %lu\n", 
+                    ETH_ALEN, sizeof(pattern[i].pattern_info));
+            return;
+        }
         pattern[i].pattern_offset = 0;
         i++;
     }
@@ -794,6 +817,9 @@ static void fxgmac_set_pattern_data(struct fxgmac_pdata *pdata)
 
     // config arp
     if (pdata->expansion.wol & WAKE_ARP) {
+        /* SECURITY: Initialize packet structure to prevent uninitialized variable usage */
+        memset(&packet, 0, sizeof(struct pattern_packet));
+        
         memset(pattern[i].mask_info, 0, sizeof(pattern[0].mask_info));
         type_offset = offsetof(struct pattern_packet, ar_pro);
         pattern[i].mask_info[type_offset / 8] |= 1 << type_offset % 8;
@@ -819,7 +845,22 @@ static void fxgmac_set_pattern_data(struct fxgmac_pdata *pdata)
         packet.ar_tip[1] = (ip_addr >> 8) & 0xFF;
         packet.ar_tip[2] = (ip_addr >> 16) & 0xFF;
         packet.ar_tip[3] = (ip_addr >> 24) & 0xFF;
-        memcpy(pattern[i].pattern_info, &packet, MAX_PATTERN_SIZE);
+        
+        /* SECURITY: Validate pattern buffer size before copy to prevent buffer overflow */
+        if (MAX_PATTERN_SIZE <= sizeof(pattern[i].pattern_info) && 
+            sizeof(packet) <= MAX_PATTERN_SIZE && 
+            sizeof(packet) <= sizeof(pattern[i].pattern_info)) {
+            memcpy(pattern[i].pattern_info, &packet, MAX_PATTERN_SIZE);
+        } else {
+            DPRINTK("SECURITY: Pattern buffer overflow prevention - MAX_PATTERN_SIZE=%d, buffer_size=%lu, packet_size=%lu\n",
+                    MAX_PATTERN_SIZE, sizeof(pattern[i].pattern_info), sizeof(packet));
+            return -EINVAL;
+        }
+        } else {
+            DPRINTK("SECURITY: Pattern size too large: %d > %lu\n", 
+                    MAX_PATTERN_SIZE, sizeof(pattern[i].pattern_info));
+            return;
+        }
         pattern[i].mask_size = sizeof(pattern[0].mask_info);
         pattern[i].pattern_offset = 0;
         i++;
@@ -1182,9 +1223,17 @@ static void fxgmac_ethtool_get_strings(struct net_device *netdev,
     switch (stringset) {
     case ETH_SS_STATS:
     	for (i = 0; i < FXGMAC_STATS_COUNT; i++) {
-    		memcpy(data, fxgmac_gstring_stats[i].stat_string,
-    		       strlen(fxgmac_gstring_stats[i].stat_string));
-    		data += ETH_GSTRING_LEN;
+            /* Validate string length before copy to prevent buffer overflow */
+            size_t stat_len = strlen(fxgmac_gstring_stats[i].stat_string);
+            if (stat_len < ETH_GSTRING_LEN) {
+                memcpy(data, fxgmac_gstring_stats[i].stat_string, stat_len + 1);
+            } else {
+                DPRINTK("SECURITY: Stat string too long: %lu >= %d\n", 
+                        stat_len, ETH_GSTRING_LEN);
+                strncpy(data, fxgmac_gstring_stats[i].stat_string, ETH_GSTRING_LEN - 1);
+                data[ETH_GSTRING_LEN - 1] = '\0';
+            }
+            data += ETH_GSTRING_LEN;
     	}
     	break;
     default:

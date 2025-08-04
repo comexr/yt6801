@@ -1,0 +1,77 @@
+# Spec file for OpenSUSE KMP with DKMS integration
+# Provides automatic kernel module rebuilds
+
+%define mod_name tuxedo-yt6801
+%define mod_version #MODULE_VERSION#
+
+Name:           %{mod_name}-kmp
+Version:        %{mod_version}
+Release:        1%{?dist}
+Summary:        Kernel module for Motorcomm YT6801 ethernet controller
+License:        GPL-2.0+
+Group:          System/Kernel
+URL:            https://www.tuxedocomputers.com
+Source0:        %{mod_name}-%{version}.tar.xz
+BuildRequires:  kernel-devel
+BuildRequires:  dkms
+Requires:       dkms
+Requires:       kernel-devel
+Requires:       kernel-source
+Requires:       gcc
+Requires:       make
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ExclusiveArch:  %ix86 x86_64
+BuildArch:      noarch
+
+%description
+This package contains the kernel module for the Motorcomm YT6801 gigabit
+ethernet controller. It uses DKMS to automatically rebuild the module
+for any installed kernel version on OpenSUSE Tumbleweed.
+
+%prep
+%setup -q -n %{mod_name}-%{version}
+
+%build
+# Nothing to build - DKMS will handle compilation
+
+%install
+# Install source to DKMS tree
+mkdir -p %{buildroot}/usr/src/%{mod_name}-%{version}
+cp -r src/* %{buildroot}/usr/src/%{mod_name}-%{version}/
+
+# Create DKMS configuration
+cat > %{buildroot}/usr/src/%{mod_name}-%{version}/dkms.conf << EOF
+PACKAGE_NAME="%{mod_name}"
+PACKAGE_VERSION="%{version}"
+BUILT_MODULE_NAME[0]="yt6801"
+DEST_MODULE_LOCATION[0]="/kernel/drivers/net/ethernet/motorcomm"
+AUTOINSTALL="yes"
+REMAKE_INITRD="yes"
+EOF
+
+%files
+/usr/src/%{mod_name}-%{version}/
+
+%post
+# Add to DKMS tree
+dkms add -m %{mod_name} -v %{version} --rpm_safe_upgrade
+
+# Build and install for all installed kernels
+if [ -z "$DURING_INSTALL" ]; then
+    for kernel in /lib/modules/*; do
+        if [ -d "$kernel" ]; then
+            kernel_version=$(basename "$kernel")
+            dkms build -m %{mod_name} -v %{version} -k "$kernel_version" 2>/dev/null || true
+            dkms install -m %{mod_name} -v %{version} -k "$kernel_version" 2>/dev/null || true
+        fi
+    done
+fi
+
+%preun
+# Remove from DKMS tree on uninstall
+if [ $1 -eq 0 ]; then
+    dkms remove -m %{mod_name} -v %{version} --all 2>/dev/null || true
+fi
+
+%changelog
+# Changelog will be appended by the build process
