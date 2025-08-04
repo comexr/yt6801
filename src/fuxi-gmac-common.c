@@ -44,8 +44,15 @@ static int fxgmac_read_mac_addr(struct fxgmac_pdata *pdata)
     }
 
     if (ETH_IS_ZEROADDRESS(pdata->mac_addr)) {
-        /* Currently it uses a static mac address for test */
-        memcpy(pdata->mac_addr, dev_addr, netdev->addr_len);
+        /* SECURITY: Validate MAC address length before copy */
+        if (netdev->addr_len <= ETH_ALEN) {
+            /* Currently it uses a static mac address for test */
+            memcpy(pdata->mac_addr, dev_addr, netdev->addr_len);
+        } else {
+            DPRINTK("SECURITY: Invalid MAC address length %d > %d\n", 
+                    netdev->addr_len, ETH_ALEN);
+            return -EINVAL;
+        }
     }
     return 0;
 }
@@ -131,7 +138,14 @@ int fxgmac_init(struct fxgmac_pdata *pdata, bool save_private_reg)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,17,0))
     eth_hw_addr_set(netdev, pdata->mac_addr);
 #else
-    memcpy(netdev->dev_addr, pdata->mac_addr, netdev->addr_len);
+    /* SECURITY: Validate MAC address length before copy */
+    if (netdev->addr_len <= ETH_ALEN) {
+        memcpy(netdev->dev_addr, pdata->mac_addr, netdev->addr_len);
+    } else {
+        DPRINTK("SECURITY: Invalid MAC address length %d > %d\n", 
+                netdev->addr_len, ETH_ALEN);
+        return -EINVAL;
+    }
 #endif
 
     if (save_private_reg) {

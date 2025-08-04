@@ -51,6 +51,12 @@ static void fxgmac_dbg_tx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
         return;
     }
 
+    /* SECURITY: Validate packet length to prevent buffer overflow */
+    if (pktLen > ETH_FRAME_LEN) {
+        DPRINTK("SECURITY: Packet length too large: %u > %d\n", pktLen, ETH_FRAME_LEN);
+        return;
+    }
+
     /* alloc sk_buff */
     skb = alloc_skb(pktLen, GFP_ATOMIC);
     if (!skb){
@@ -61,7 +67,14 @@ static void fxgmac_dbg_tx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
     /* copy data to skb */
     pSkb_data = skb_put(skb, pktLen);
     memset(pSkb_data, 0, pktLen);
-    memcpy(pSkb_data, pTx_data, pktLen);
+    /* SECURITY: Validate source data pointer before copy */
+    if (pTx_data) {
+        memcpy(pSkb_data, pTx_data, pktLen);
+    } else {
+        DPRINTK("SECURITY: Source data pointer is NULL\n");
+        dev_kfree_skb_any(skb);
+        return;
+    }
 
     /* set skb parameters */
     skb->dev = pdata->netdev;
@@ -374,6 +387,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
                        in_data_size, sizeof(struct led_setting));
                 goto err;
             }
+            /* SECURITY: Validate data pointer before LED configuration copy */
+            if (!data) {
+                DPRINTK("SECURITY: LED test data pointer is NULL\n");
+                goto err;
+            }
             memcpy(&pdata->led, data, sizeof(struct led_setting));
             fxgmac_restart_dev(pdata);
             break;
@@ -383,6 +401,11 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             if (in_data_size != sizeof(struct led_setting)) {
                 DPRINTK("FXGMAC_EFUSE_UPDATE_LED_CFG: Invalid data size %d, expected %zu\n", 
                        in_data_size, sizeof(struct led_setting));
+                goto err;
+            }
+            /* SECURITY: Validate data pointer before LED config copy */
+            if (!data) {
+                DPRINTK("SECURITY: LED config data pointer is NULL\n");
                 goto err;
             }
             memcpy(&pdata->ledconfig, data, sizeof(struct led_setting));
@@ -509,10 +532,17 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
         case FXGMAC_GET_MAC_DATA:
             ret = hw_ops->read_mac_subsys_from_efuse(pdata, mac, NULL, NULL);
             if (ret) {
-                memcpy(data, mac, ETH_ALEN);
-                out_total_size = ioctl_cmd_size + ETH_ALEN;
-                if (copy_to_user((void*)arg, (void*)buf, out_total_size))
+                /* SECURITY: Validate buffer size before MAC address copy */
+                if (in_data_size >= ETH_ALEN) {
+                    memcpy(data, mac, ETH_ALEN);
+                    out_total_size = ioctl_cmd_size + ETH_ALEN;
+                    if (copy_to_user((void*)arg, (void*)buf, out_total_size))
+                        goto err;
+                } else {
+                    DPRINTK("SECURITY: Insufficient buffer size for MAC address: %d < %d\n", 
+                            in_data_size, ETH_ALEN);
                     goto err;
+                }
             }
             break;
 
@@ -572,7 +602,17 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_GET_REG:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_GET_REG: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
+            /* SECURITY: Validate register offset to prevent invalid memory access */
+            if (ex_data.val0 > 0x10000) { /* Reasonable register space limit */
+                DPRINTK("SECURITY: Invalid register offset: 0x%x\n", ex_data.val0);
+                goto err;
+            }
             ex_data.val1 = hw_ops->get_gmac_register(pdata,
                                         (u8*)(pdata->base_mem + ex_data.val0));
             memcpy(data, &ex_data, sizeof(CMD_DATA));
@@ -582,7 +622,17 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
             break;
 
         case FXGMAC_SET_REG:
+            if (in_data_size != sizeof(CMD_DATA)) {
+                DPRINTK("FXGMAC_SET_REG: Invalid data size %d, expected %zu\n", 
+                       in_data_size, sizeof(CMD_DATA));
+                goto err;
+            }
             memcpy(&ex_data, data, sizeof(CMD_DATA));
+            /* SECURITY: Validate register offset to prevent invalid memory access */
+            if (ex_data.val0 > 0x10000) { /* Reasonable register space limit */
+                DPRINTK("SECURITY: Invalid register offset: 0x%x\n", ex_data.val0);
+                goto err;
+            }
             regval = hw_ops->set_gmac_register(pdata,
                                         (u8*)(pdata->base_mem + ex_data.val0),
                                         ex_data.val1);

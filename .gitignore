@@ -24,3 +24,6 @@ modules.order
 *.kate-swp
 /*.kdev4
 /.vscode
+
+# Static Analysis Reports
+/static-analysis-reports

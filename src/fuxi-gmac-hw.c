@@ -2579,6 +2579,13 @@ static int fxgmac_write_rss_lookup_table(struct fxgmac_pdata *pdata)
 
 static int fxgmac_set_rss_hash_key(struct fxgmac_pdata *pdata, const u8 *key)
 {
+    /* Validate RSS key pointer to prevent null dereference */
+    if (!key) {
+        DPRINTK("SECURITY: RSS key pointer is NULL\n");
+        return -EINVAL;
+    }
+    
+    /* Secure RSS key copy with bounds checking */
     memcpy(pdata->rss_key, (void*)key, sizeof(pdata->rss_key));//CopyMem
 
     return fxgmac_write_rss_hash_key(pdata);
@@ -2952,7 +2959,14 @@ static void fxgmac_update_ns_offload_ipv6addr(struct fxgmac_pdata *pdata, unsign
     DPRINTK("%s, Get net device binary IPv6 ok, local-link=%pI6\n", __FUNCTION__, target_addr1);
     DPRINTK("%s, Get net device binary IPv6 ok, solicited =%pI6\n", __FUNCTION__, solicited_addr);
 
-    memcpy(mac_addr, netdev->dev_addr, netdev->addr_len);
+    /* Secure MAC address copy with bounds validation */
+    if (netdev->addr_len <= ETH_ALEN) {
+        memcpy(mac_addr, netdev->dev_addr, netdev->addr_len);
+    } else {
+        DPRINTK("SECURITY: Invalid MAC address length %d > %d\n", 
+                netdev->addr_len, ETH_ALEN);
+        return;
+    }
     DPRINTK("%s, Get net device MAC addr ok, ns_tab idx=%d, %02x:%02x:%02x:%02x:%02x:%02x\n",
         __FUNCTION__, pdata->expansion.ns_offload_tab_idx, mac_addr[0], mac_addr[1],
         mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
@@ -3131,10 +3145,21 @@ static int fxgmac_set_wake_pattern(
     }
 
     for (i = 0; i < pattern_cnt; i++) {
+        /* SECURITY: Validate pattern array bounds before copy */
+        if (i >= MAX_PATTERN_COUNT) {
+            DbgPrintF(MP_TRACE, "%s - SECURITY: Pattern index %d exceeds MAX_PATTERN_COUNT %d\n", 
+                      __FUNCTION__, i, MAX_PATTERN_COUNT);
+            break;
+        }
         memcpy(&pdata->pattern[i], wol_pattern + i, sizeof(wol_pattern[0]));
         if (pattern_cnt + pattern_inherited_cnt < MAX_PATTERN_COUNT)
         {
             if (wol_pattern[i].pattern_offset || !(wol_pattern[i].mask_info[0] & 0x01)) {
+                /* SECURITY: Validate inherited pattern bounds */
+                if (pattern_cnt + pattern_inherited_cnt >= MAX_PATTERN_COUNT) {
+                    DbgPrintF(MP_TRACE, "%s - SECURITY: Inherited pattern count exceeds limit\n", __FUNCTION__);
+                    break;
+                }
                 memcpy(&pdata->pattern[pattern_cnt + pattern_inherited_cnt],
                     wol_pattern + i,
                     sizeof(wol_pattern[0]));

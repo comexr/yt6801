@@ -374,9 +374,16 @@ unsigned char * fxgmac_get_netdev_ip6addr(struct fxgmac_pdata *pdata, unsigned c
             if (((ifa_flag & FXGMAC_NS_IFA_GLOBAL_UNICAST) && (ifp->scope != IFA_LINK)) || ((ifa_flag & FXGMAC_NS_IFA_LOCAL_LINK) && (ifp->scope == IFA_LINK)/* &&
                 !(ifp->flags & IFA_F_TENTATIVE)*/)) {
 
-                memcpy(addr_ip6, &ifp->addr, 16);
-                addrconf_addr_solict_mult(addr_ip6, addr_ip6_solicited);
-                err = 0;
+                /* SECURITY: Validate IPv6 address buffer size before copy */
+                if (addr_ip6 && sizeof(ifp->addr) == 16) {
+                    memcpy(addr_ip6, &ifp->addr, 16);
+                    addrconf_addr_solict_mult(addr_ip6, addr_ip6_solicited);
+                    err = 0;
+                } else {
+                    DPRINTK("SECURITY: Invalid IPv6 address buffer or size\n");
+                    err = -EINVAL;
+                    break;
+                }
 
                 //DPRINTK("%s, netdev %s IPv6 local-link address %pI6\n",__FUNCTION__, netdev->name, addr_ip6);
                 //DPRINTK("%s, netdev %s IPv6 solicited-node add %pI6\n",__FUNCTION__, netdev->name, addr_ip6_solicited);
@@ -2128,6 +2135,13 @@ static int fxgmac_set_mac_address(struct net_device *netdev, void *addr)
 
     if (!is_valid_ether_addr(saddr->sa_data))
         return -EADDRNOTAVAIL;
+
+    /* SECURITY: Validate MAC address length before copy */
+    if (netdev->addr_len > ETH_ALEN) {
+        DPRINTK("SECURITY: Invalid MAC address length %d > %d\n", 
+                netdev->addr_len, ETH_ALEN);
+        return -EINVAL;
+    }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,17,0))
     eth_hw_addr_set(netdev, saddr->sa_data);
