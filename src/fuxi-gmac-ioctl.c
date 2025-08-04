@@ -40,7 +40,14 @@ static void fxgmac_dbg_tx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
 
     /* Validate packet length to prevent buffer overflow */
     if (pktLen > FXGMAC_MAX_DBG_TX_DATA || pktLen == 0) {
-        DPRINTK("Invalid packet length: %u (max: %d)\n", pktLen, FXGMAC_MAX_DBG_TX_DATA);
+        DPRINTK("SECURITY: Invalid packet length: %u (max: %d)\n", pktLen, FXGMAC_MAX_DBG_TX_DATA);
+        return;
+    }
+
+    /* Additional validation: ensure we don't exceed maximum allowed packet size */
+    if (pktLen > ETH_FRAME_LEN + ETH_FCS_LEN + VLAN_HLEN) {
+        DPRINTK("SECURITY: Packet too large: %u (max normal: %d)\n", 
+                pktLen, ETH_FRAME_LEN + ETH_FCS_LEN + VLAN_HLEN);
         return;
     }
 
@@ -139,7 +146,21 @@ static void fxgmac_dbg_rx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
         /* get received skb data */
         rx_skb = pdata->expansion.fxgmac_test_skb_array[pdata->expansion.fxgmac_test_skb_arr_out_index];
 
-        if(rx_skb->len + sizeof(fxgmac_test_packet) + totalLen < 64000){
+        /* SECURITY: Validate SKB length to prevent buffer overflow */
+        if (!rx_skb) {
+            DPRINTK("SECURITY: NULL SKB detected\n");
+            break;
+        }
+
+        if (rx_skb->len > FXGMAC_MAX_DBG_RX_DATA) {
+            DPRINTK("SECURITY: SKB too large: %u (max: %d)\n", rx_skb->len, FXGMAC_MAX_DBG_RX_DATA);
+            pdata->expansion.fxgmac_test_skb_arr_out_index = 
+                (pdata->expansion.fxgmac_test_skb_arr_out_index + 1) % FXGMAC_MAX_DBG_TEST_PKT;
+            continue;
+        }
+
+        /* SECURITY: Check total buffer bounds */
+        if(rx_skb->len + sizeof(fxgmac_test_packet) + totalLen < FXGMAC_MAX_DBG_BUF_LEN){
             pkt.length = rx_skb->len;
             pkt.type = 0x80;
             pkt.buf[0].offset = totalLen + sizeof(fxgmac_test_packet);
@@ -151,7 +172,14 @@ static void fxgmac_dbg_rx_pkt(struct fxgmac_pdata *pdata, u8 *pcmd_data)
                 DPRINTK("RX packet too large: %u (max: %d)\n", rx_skb->len, FXGMAC_MAX_DBG_RX_DATA);
                 break;
             }
-            memcpy(rx_data, rx_skb->data, rx_skb->len);
+            /* SECURITY: Bounds check before memcpy */
+            if (rx_skb->len <= FXGMAC_MAX_DBG_RX_DATA && 
+                (totalLen + rx_skb->len + sizeof(fxgmac_test_packet)) <= FXGMAC_MAX_DBG_BUF_LEN) {
+                memcpy(rx_data, rx_skb->data, rx_skb->len);
+            } else {
+                DPRINTK("SECURITY: Buffer overflow prevention - skipping packet\n");
+                break;
+            }
 
 	        /* update next pointer */
 	        if((pdata->expansion.fxgmac_test_skb_arr_out_index + 1) % FXGMAC_MAX_DBG_TEST_PKT == pdata->expansion.fxgmac_test_skb_arr_in_index)
@@ -246,6 +274,24 @@ long fxgmac_netdev_ops_ioctl(struct file *file, unsigned int cmd, unsigned long 
     in_total_size = pcmd.cmd_buf.size_in;
     in_data_size = in_total_size - ioctl_cmd_size;
     out_total_size = pcmd.cmd_buf.size_out;
+
+    /* SECURITY: Validate buffer sizes to prevent buffer overflows */
+    if (in_total_size < ioctl_cmd_size || in_total_size > FXGMAC_MAX_DBG_BUF_LEN) {
+        DPRINTK("SECURITY: Invalid input buffer size: %d (min: %d, max: %d)\n", 
+                in_total_size, ioctl_cmd_size, FXGMAC_MAX_DBG_BUF_LEN);
+        goto err;
+    }
+
+    if (out_total_size > FXGMAC_MAX_DBG_BUF_LEN) {
+        DPRINTK("SECURITY: Invalid output buffer size: %d (max: %d)\n", 
+                out_total_size, FXGMAC_MAX_DBG_BUF_LEN);
+        goto err;
+    }
+
+    if (in_data_size < 0) {
+        DPRINTK("SECURITY: Negative data size: %d\n", in_data_size);
+        goto err;
+    }
 
     buf = (u8*)kzalloc(in_total_size, GFP_KERNEL);
     if (!buf)
