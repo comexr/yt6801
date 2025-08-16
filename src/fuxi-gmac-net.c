@@ -772,7 +772,9 @@ static void fxgmac_tx_hang_timer_handler(struct timer_list *t)
 static void fxgmac_tx_hang_timer_handler(unsigned long data)
 #endif
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,16,0))
+    struct fxgmac_channel *channel = timer_container_of(channel, t, expansion.tx_hang_timer);
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
     struct fxgmac_channel *channel = from_timer(channel, t, expansion.tx_hang_timer);
 #else
     struct fxgmac_channel *channel = (struct fxgmac_channel *)data;
