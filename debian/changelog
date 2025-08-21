@@ -1,6 +1,13 @@
+tuxedo-yt6801 (1.0.30tux3) tuxedo; urgency=medium
+
+  [ Stefan Gerber ]
+  * Apply function rename to fix compile error with kernel 6.16 and newer
+
+ -- Werner Sembach <tux@tuxedocomputers.com>  Thu, 21 Aug 2025 10:50:44 +0200
+
 tuxedo-yt6801 (1.0.30tux2) noble; urgency=medium
 
-  * Dynamically switch power mode on some devices for lower sleep power draw
+  * Dynamically switch power mode on some devices for lower idle power draw
 
  -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 16 Jul 2025 17:57:17 +0200
 
