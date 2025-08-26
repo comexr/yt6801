@@ -1,3 +1,11 @@
+tuxedo-yt6801 (1.0.30tux4) tuxedo; urgency=medium
+
+  [ Georg Gottleuber ]
+  * reverte idle power fix with race problems
+  * fix idle power consumption
+
+ -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 26 Aug 2025 16:46:20 +0200
+
 tuxedo-yt6801 (1.0.30tux3) tuxedo; urgency=medium
 
   [ Stefan Gerber ]
