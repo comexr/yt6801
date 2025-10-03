@@ -1,4 +1,4 @@
-yt6801 (1.0.30tux4) tuxedo; urgency=medium
+yt6801 (1.0.30-4) tuxedo; urgency=medium
 
   [ Georg Gottleuber ]
   * reverte idle power fix with race problems
@@ -6,20 +6,20 @@ yt6801 (1.0.30tux4) tuxedo; urgency=medium
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 26 Aug 2025 16:46:20 +0200
 
-yt6801 (1.0.30tux3) tuxedo; urgency=medium
+yt6801 (1.0.30-3) tuxedo; urgency=medium
 
   [ Stefan Gerber ]
   * Apply function rename to fix compile error with kernel 6.16 and newer
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Thu, 21 Aug 2025 10:50:44 +0200
 
-yt6801 (1.0.30tux2) noble; urgency=medium
+yt6801 (1.0.30-2) noble; urgency=medium
 
   * Dynamically switch power mode on some devices for lower idle power draw
 
  -- Tuxedo BOT <tux@tuxedocomputers.com>  Wed, 16 Jul 2025 17:57:17 +0200
 
-yt6801 (1.0.30tux1) noble; urgency=medium
+yt6801 (1.0.30-1) noble; urgency=medium
 
   * Update source to 1.0.30 from upstream
   * Update Makefile
@@ -27,14 +27,14 @@ yt6801 (1.0.30tux1) noble; urgency=medium
 
  -- Tuxedo BOT <tux@tuxedocomputers.com>  Thu, 12 Jun 2025 12:59:01 +0200
 
-yt6801 (1.0.29tux1) noble; urgency=medium
+yt6801 (1.0.29-1) noble; urgency=medium
 
   * Fix wrong name in Makefile
   * Fix compile error because of bogus debug print define
 
  -- Werner Sembach <tux@tuxedocomputers.com>  Tue, 25 Mar 2025 11:54:45 +0100
 
-yt6801 (1.0.29tux0) jammy; urgency=medium
+yt6801 (1.0.29-0) jammy; urgency=medium
 
   * Update codebase to 1.0.29
   * Convert to native package
