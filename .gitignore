@@ -14,11 +14,11 @@ modules.order
 /debian/*.substvars
 /debian/debhelper-build-stamp
 /debian/files
-/debian/tuxedo-yt6801
+/debian/yt6801
 
 # rpmbuild artifacts
 /src/dkms.conf
-/tuxedo-yt6801.spec
+/yt6801.spec
 
 # IDE artifacts
 *.kate-swp

@@ -1,9 +1,9 @@
 #
 # Copyright (c) 2023 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
 #
-# This file is part of tuxedo-yt6801.
+# This file is part of yt6801.
 #
-# tuxedo-yt6801 is free software; you can redistribute it and/or
+# yt6801 is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; version 2
 # of the License.
@@ -29,10 +29,10 @@ package-deb:
 	debuild --no-tgz-check --no-sign
 
 package-rpm:
-	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-yt6801.dkms > src/dkms.conf
-	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' tuxedo-yt6801.spec.in > tuxedo-yt6801.spec
-	echo >> tuxedo-yt6801.spec
-	./debian-changelog-to-rpm-changelog.awk debian/changelog >> tuxedo-yt6801.spec
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/yt6801.dkms > src/dkms.conf
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' yt6801.spec.in > yt6801.spec
+	echo >> yt6801.spec
+	./debian-changelog-to-rpm-changelog.awk debian/changelog >> yt6801.spec
 	mkdir -p $(shell rpm --eval "%{_sourcedir}")
 	tar --create --file $(shell rpm --eval "%{_sourcedir}")/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz\
 		--transform="s/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)\/usr\/src\/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/"\
@@ -45,4 +45,4 @@ package-rpm:
 		--exclude=*.o\
 		--exclude=modules.order\
 		src debian/copyright
-	rpmbuild -ba tuxedo-yt6801.spec
+	rpmbuild -ba yt6801.spec

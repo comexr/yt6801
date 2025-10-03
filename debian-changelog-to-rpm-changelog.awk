@@ -1,7 +1,7 @@
 #!/bin/gawk -f
 
 BEGIN {
-    RS="(^|\n)tuxedo-yt6801 "
+    RS="(^|\n)yt6801 "
     FS="\n"
     print "%changelog"
 }
