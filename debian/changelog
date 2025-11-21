@@ -1,3 +1,10 @@
+yt6801 (1.0.30lwl5) tuxedo; urgency=medium
+
+  [ Aaron Erhardt ]
+  * fix: remove outdated quirk for RHEL 7
+
+ -- Werner Sembach <tux@tuxedocomputers.com>  Mon, 03 Nov 2025 23:03:26 +0100
+
 yt6801 (1.0.30lwl4) tuxedo; urgency=medium
 
   [ Georg Gottleuber ]
